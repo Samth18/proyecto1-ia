@@ -108,4 +108,3 @@ El proyecto incluye la capacidad de visualizar la estructura de árbol generada 
 
 =======
 Este proyecto está licenciado bajo la licencia MIT - ver el archivo [LICENSE](LICENSE)  para más detalles.
->>>>>>> Stashed changes
