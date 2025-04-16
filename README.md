@@ -100,10 +100,13 @@ El proyecto incluye la capacidad de visualizar la estructura de árbol generada 
 - Destaca el camino óptimo encontrado
 - Ayuda a entender las diferencias entre los algoritmos
 
-## Autor
+## Autores
 
-[Tu Nombre]
+César David Peñaranda Melo
+Juan David Cuellar López
+Joseph Herrera Libreros
+Samuel Escobar Rivera 
 
 ## Licencia
 
-Este proyecto está licenciado bajo [tu licencia] - ver el archivo LICENSE para más detalles.
+Este proyecto está licenciado bajo la licencia MIT - ver el archivo LICENSE(./LICENSE) para más detalles.
