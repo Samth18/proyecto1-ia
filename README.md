@@ -1,1 +1,2 @@
-# proyecto1-ia
+# Laberinto Dinámico IA
+...
