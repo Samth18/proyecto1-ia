@@ -29,6 +29,7 @@ class Agente:
         self.historial_posiciones = [posicion_inicial]
         self.nodo_final = None
         self.visualizador.limpiar()
+        self.tiempo_final = None
     
     def actuar(self, laberinto):
         """Actúa según el estado actual y el algoritmo seleccionado."""

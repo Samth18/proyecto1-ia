@@ -64,7 +64,13 @@ def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo
     panel.blit(texto_titulo, (100, 20))
     
     # Información
-    tiempo_actual = time.time() - tiempo_inicio if tiempo_inicio else 0
+    if estado == "Meta encontrada" and hasattr(agente, 'tiempo_final'):
+        tiempo_actual = agente.tiempo_final
+    elif tiempo_inicio:
+        tiempo_actual = time.time() - tiempo_inicio
+    else:
+        tiempo_actual = 0   
+
     texto_algoritmo = fuente.render(f"Algoritmo: {agente.algoritmo_actual}", True, (0, 0, 0))
     texto_pasos = fuente.render(f"Pasos: {pasos}", True, (0, 0, 0))
     texto_tiempo = fuente.render(f"Tiempo: {tiempo_actual:.1f}s", True, (0, 0, 0))
@@ -204,8 +210,10 @@ def main():
     ejecutando = False
     pasos = 0
     tiempo_inicio = None
+    tiempo_final = None  # Para almacenar el tiempo cuando se encuentra la meta
+    pasos_finales = 0    # Para almacenar los pasos cuando se encuentra la meta
     modo_dinamico = False
-    contador_dinamico = 10  # Contador para cambios dinámicos
+    contador_dinamico = 10
     velocidad = "Normal"
     
     while True:
@@ -222,18 +230,21 @@ def main():
                     for nombre, rect in botones:
                         if rect.collidepoint(x_rel, y_rel):
                             if nombre == "inicio":
-                                ejecutando = not ejecutando
-                                if ejecutando:
-                                    agente.estado = "Buscando"
-                                    if tiempo_inicio is None:
-                                        tiempo_inicio = time.time()
-                                else:
-                                    agente.estado = "Pausado"
+                                if agente.estado != "Meta encontrada":  # Solo permitir iniciar/pausar si no ha encontrado la meta
+                                    ejecutando = not ejecutando
+                                    if ejecutando:
+                                        agente.estado = "Buscando"
+                                        if tiempo_inicio is None:
+                                            tiempo_inicio = time.time()
+                                    else:
+                                        agente.estado = "Pausado"
                             elif nombre == "reinicio":
                                 agente.reiniciar(laberinto.inicio)
                                 ejecutando = False
                                 pasos = 0
                                 tiempo_inicio = None
+                                tiempo_final = None
+                                pasos_finales = 0
                                 contador_dinamico = 10
                             elif nombre == "arbol":
                                 mostrar_arbol = not mostrar_arbol
@@ -244,7 +255,6 @@ def main():
                             elif nombre.startswith("algo_"):
                                 nuevo_algo = nombre.split("_")[1]
                                 if agente.cambiar_algoritmo(nuevo_algo):
-                                    # Si el agente está esperando, empezar a buscar al cambiar el algoritmo
                                     if agente.estado == "Esperando":
                                         agente.estado = "Buscando"
                                         if tiempo_inicio is None:
@@ -254,28 +264,43 @@ def main():
                                 velocidad = nombre.split("_")[1]
         
         # Actualizar estado del juego
-        if ejecutando:
+        if ejecutando and agente.estado != "Meta encontrada":
             # Actualizar el agente
             agente.actuar(laberinto)
             pasos += 1
             
+            # Verificar si encontró la meta
+            if agente.estado == "Meta encontrada":
+                agente.tiempo_final = time.time() - tiempo_inicio
+                pasos_finales = pasos
+                ejecutando = False  # Detener la ejecución automática
+            
             # Actualizar modo dinámico
-            if modo_dinamico:
+            if modo_dinamico and agente.estado != "Meta encontrada":
                 contador_dinamico -= 1
                 if contador_dinamico <= 0:
-                    # Cambiar el laberinto
                     laberinto.cambiar_paredes_aleatorias(3)
-                    contador_dinamico = 10  # Resetear contador
+                    contador_dinamico = 10
+        
+        # Calcular qué valores mostrar (actuales o finales si se encontró la meta)
+        if agente.estado == "Meta encontrada":
+            tiempo_mostrar = tiempo_final
+            pasos_mostrar = pasos_finales
+        elif tiempo_inicio is not None:
+            tiempo_mostrar = time.time() - tiempo_inicio
+            pasos_mostrar = pasos
+        else:
+            tiempo_mostrar = 0
+            pasos_mostrar = pasos
+
         
         # Dibujar
         dibujar_laberinto(ventana, laberinto, agente)
-        botones = dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, 
+        botones = dibujar_panel(ventana, agente, laberinto, pasos_mostrar, 
+                               tiempo_inicio, 
                                agente.estado, modo_dinamico, contador_dinamico, velocidad, mostrar_arbol)
         if mostrar_arbol:
             dibujar_arbol_busqueda(ventana, agente)
         
         pygame.display.update()
         reloj.tick(obtener_fps_por_velocidad(velocidad))
-
-if __name__ == "__main__":
-    main()
