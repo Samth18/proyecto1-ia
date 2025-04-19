@@ -1,5 +1,6 @@
 import pygame
 import time
+import os
 from core.laberinto import Laberinto
 from core.agente import Agente
 
@@ -39,7 +40,7 @@ def dibujar_laberinto(ventana, laberinto, agente):
             if laberinto.grid[fila][col] == 1:
                 color = COLORES["pared"]
             elif (fila, col) == laberinto.meta:
-                color = COLORES["meta"]
+                color = COLORES["camino"]  # Usar fondo de camino para la meta (imagen irá encima)
             elif (fila, col) in agente.visitados:
                 color = COLORES["visitado"]
             elif (fila, col) in agente.camino_optimo:
@@ -48,13 +49,44 @@ def dibujar_laberinto(ventana, laberinto, agente):
                 color = COLORES["camino"]
             
             pygame.draw.rect(ventana, color, (x, y, TAMANO_CELDA, TAMANO_CELDA))
+            
+            # Dibujar la meta con imagen
+            if (fila, col) == laberinto.meta:
+                if 'IMG_META' in globals() and IMG_META is not None:
+                    try:
+                        # Redimensionar imagen para ajustarse a la celda
+                        img_escalada = pygame.transform.scale(IMG_META, (TAMANO_CELDA - 4, TAMANO_CELDA - 4))
+                        # Centrar imagen en la celda
+                        img_rect = img_escalada.get_rect(center=(x + TAMANO_CELDA // 2, y + TAMANO_CELDA // 2))
+                        ventana.blit(img_escalada, img_rect)
+                    except Exception as e:
+                        print(f"Error al dibujar meta: {e}")
+                        # Dibujar representación alternativa
+                        pygame.draw.rect(ventana, COLORES["meta"], (x, y, TAMANO_CELDA, TAMANO_CELDA))
+                else:
+                    # Si no hay imagen, usar el cuadrado rojo
+                    pygame.draw.rect(ventana, COLORES["meta"], (x, y, TAMANO_CELDA, TAMANO_CELDA))
     
-    # Dibujar agente
+    # Dibujar agente con imagen
     agente_x = ANCHO_PANEL + agente.posicion[1] * (TAMANO_CELDA + MARGEN) + TAMANO_CELDA // 2
     agente_y = agente.posicion[0] * (TAMANO_CELDA + MARGEN) + TAMANO_CELDA // 2
-    pygame.draw.circle(ventana, COLORES["agente"], (agente_x, agente_y), TAMANO_CELDA // 4)
+    
+    if 'IMG_AGENTE' in globals() and IMG_AGENTE is not None:
+        try:
+            # Redimensionar imagen para ajustarse a la celda
+            img_escalada = pygame.transform.scale(IMG_AGENTE, (TAMANO_CELDA - 4, TAMANO_CELDA - 4))
+            # Centrar imagen en la celda
+            img_rect = img_escalada.get_rect(center=(agente_x, agente_y))
+            ventana.blit(img_escalada, img_rect)
+        except Exception as e:
+            print(f"Error al dibujar agente: {e}")
+            # Dibujar representación alternativa
+            pygame.draw.circle(ventana, COLORES["agente"], (agente_x, agente_y), TAMANO_CELDA // 4)
+    else:
+        # Usar círculo si la imagen no está disponible
+        pygame.draw.circle(ventana, COLORES["agente"], (agente_x, agente_y), TAMANO_CELDA // 4)
 
-def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo_dinamico, contador_dinamico, velocidad, mostrar_arbol):
+def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo_dinamico, contador_dinamico, velocidad, mostrar_arbol, tiempo_final=None):
     panel_x = 0  # Panel en el borde izquierdo
     panel = pygame.Surface((ANCHO_PANEL, ALTO_PANEL))
     panel.fill(COLORES["panel"])
@@ -68,7 +100,13 @@ def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo
     panel.blit(texto_titulo, (100, 20))
     
     # Información
-    tiempo_actual = time.time() - tiempo_inicio if tiempo_inicio else 0
+    if tiempo_final is not None:
+        # Si hay un tiempo final (meta encontrada), usar ese
+        tiempo_actual = tiempo_final
+    else:
+        # Si no, calcularlo normalmente
+        tiempo_actual = time.time() - tiempo_inicio if tiempo_inicio else 0
+    
     texto_algoritmo = fuente.render(f"Algoritmo: {agente.algoritmo_actual}", True, (0, 0, 0))
     texto_pasos = fuente.render(f"Pasos: {pasos}", True, (0, 0, 0))
     texto_tiempo = fuente.render(f"Tiempo: {tiempo_actual:.1f}s", True, (0, 0, 0))
@@ -179,15 +217,52 @@ def dibujar_arbol_busqueda(ventana, agente):
 def obtener_fps_por_velocidad(velocidad):
     """Devuelve los FPS según la velocidad seleccionada."""
     if velocidad == "Lenta":
-        return 5
+        return 3
     elif velocidad == "Normal":
-        return 10
+        return 8
     elif velocidad == "Rápida":
-        return 20
-    return 10  # Por defecto
+        return 15
+    return 12  # Por defecto
 
 def main():
     pygame.init()
+    
+    # Variables para las imágenes
+    global IMG_AGENTE, IMG_META
+    IMG_AGENTE = None
+    IMG_META = None
+    
+    # Cargar imágenes para el agente y la meta - con mejor diagnóstico
+    try:
+        # Ruta a la carpeta de assets
+        RUTA_ASSETS = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
+        print(f"Buscando imágenes en: {RUTA_ASSETS}")
+        
+        # Verificar si los archivos existen
+        ruta_agente = os.path.join(RUTA_ASSETS, "agente.png")
+        ruta_meta = os.path.join(RUTA_ASSETS, "meta.png")
+        
+        print(f"¿Existe archivo agente? {os.path.isfile(ruta_agente)}")
+        print(f"¿Existe archivo meta? {os.path.isfile(ruta_meta)}")
+        
+        if not os.path.isfile(ruta_agente) or not os.path.isfile(ruta_meta):
+            raise FileNotFoundError("No se encontraron los archivos de imagen")
+        
+        # Cargar imágenes
+        img_agente = pygame.image.load(ruta_agente)
+        img_meta = pygame.image.load(ruta_meta)
+        
+        # Convertir a formato con alpha para transparencia
+        IMG_AGENTE = img_agente.convert_alpha()
+        IMG_META = img_meta.convert_alpha()
+        
+        print("Imágenes cargadas correctamente")
+        print(f"Dimensiones de imagen agente: {IMG_AGENTE.get_size()}")
+        print(f"Dimensiones de imagen meta: {IMG_META.get_size()}")
+    except Exception as e:
+        print(f"Error al cargar imágenes: {e}")
+        print(f"Detalles del error: {type(e).__name__}")
+        # Las variables globales ya están inicializadas como None
     
     # Obtener dimensiones de la pantalla
     pantalla_info = pygame.display.Info()
@@ -218,16 +293,17 @@ def main():
     pygame.display.set_caption("Laberinto Dinámico IA")
     
     # Crear laberinto y agente
-    laberinto = Laberinto(10, 10, 0.9) #Hay que cambiar la densidad de las paredes dependiendo del tamaño del laberinto
-    agente = Agente(laberinto.inicio)
+    laberinto = Laberinto(17, 17, 0.8) #Hay que cambiar la densidad de las paredes dependiendo del tamaño del laberinto
+    agente = Agente(laberinto.inicio)  
     
     # Variables de control
     reloj = pygame.time.Clock()
     ejecutando = False
     pasos = 0
     tiempo_inicio = None
+    tiempo_final = None  # Añadir una variable para almacenar el tiempo final cuando se encuentra la meta
     modo_dinamico = False
-    contador_dinamico = 10
+    contador_dinamico = 10 
     velocidad = "Normal"
     mostrar_arbol = True    
     
@@ -242,54 +318,98 @@ def main():
                     pygame.quit()
                     return
             elif evento.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                for nombre, rect in botones:
-                    if rect.collidepoint(x, y):  # Usar coordenadas absolutas
+                # Verificar que sea un clic izquierdo (botón 1)
+                if evento.button == 1:  # 1 es el botón izquierdo
+                    x, y = pygame.mouse.get_pos()
+                    
+                    # Crear una lista para almacenar todos los botones que fueron pulsados
+                    botones_pulsados = []
+                    
+                    # Verificar todos los botones pulsados
+                    for nombre, rect in botones:
+                        if rect.collidepoint(x, y):
+                            botones_pulsados.append(nombre)
+                    
+                    # Dar prioridad a los botones de algoritmo en orden inverso (A* primero)
+                    algoritmos_rev = ["A*", "DFS", "BFS"]
+                    for algoritmo in algoritmos_rev:
+                        algo_nombre = f"algo_{algoritmo}"
+                        if algo_nombre in botones_pulsados:
+                            nuevo_algo = algoritmo
+                            # Asegurarnos de que el algoritmo se cambia correctamente
+                            agente.algoritmo_actual = nuevo_algo  # Establecer directamente
+                            agente.cambiar_algoritmo(nuevo_algo)  # Y también llamar al método
+                            
+                            # Reiniciar el agente con el nuevo algoritmo para evitar comportamientos residuales
+                            agente.reiniciar(laberinto.inicio)
+                            
+                            # Actualizar el estado visual
+                            pasos = 0
+                            tiempo_inicio = None
+                            
+                            # Mensaje de confirmación en la consola (opcional, para debugging)
+                            print(f"Algoritmo cambiado a: {nuevo_algo}")
+                            break
+                    
+                    # Procesar otros botones si no se seleccionó ningún algoritmo
+                    for nombre in botones_pulsados:
                         if nombre == "inicio":
-                            ejecutando = not ejecutando
-                            if ejecutando:
-                                agente.estado = "Buscando"
-                                if tiempo_inicio is None:
-                                    tiempo_inicio = time.time()
+                            # Verificar que se haya seleccionado un algoritmo primero
+                            if agente.algoritmo_actual is None:
+                                # Mostrar mensaje o indicación visual de que debe seleccionar un algoritmo
+                                print("Por favor seleccione un algoritmo primero")
                             else:
-                                agente.estado = "Pausado"
+                                ejecutando = not ejecutando
+                                if ejecutando:
+                                    # Asegurarnos de que el algoritmo seleccionado se use
+                                    print(f"Iniciando ejecución con algoritmo: {agente.algoritmo_actual}")
+                                    agente.estado = "Buscando"
+                                    if tiempo_inicio is None:
+                                        tiempo_inicio = time.time()
+                                else:
+                                    agente.estado = "Pausado"
+                            break
                         elif nombre == "reinicio":
                             agente.reiniciar(laberinto.inicio)
                             ejecutando = False
                             pasos = 0
                             tiempo_inicio = None
-                            contador_dinamico = 10
+                            tiempo_final = None  # Reiniciar el tiempo final también
+                            contador_dinamico = 10  
                         elif nombre == "arbol":
                             mostrar_arbol = not mostrar_arbol
+                            break
                         elif nombre == "dinamico":
                             modo_dinamico = not modo_dinamico
-                        elif nombre.startswith("algo_"):
-                            nuevo_algo = nombre.split("_")[1]
-                            if agente.cambiar_algoritmo(nuevo_algo):
-                                if agente.estado == "Esperando":
-                                    agente.estado = "Buscando"
-                                    if tiempo_inicio is None:
-                                        tiempo_inicio = time.time()
-                                    ejecutando = True
+                            break
                         elif nombre.startswith("vel_"):
                             velocidad = nombre.split("_")[1]
+                            break
         
         # Actualizar estado del juego
         if ejecutando:
-            agente.actuar(laberinto)
-            pasos += 1
-            
-            if modo_dinamico:
-                contador_dinamico -= 1
-                if contador_dinamico <= 0:
-                    laberinto.cambiar_paredes_aleatorias(3)
-                    contador_dinamico = 10
+            # Verificar si el agente ya llegó a la meta para pausar el tiempo
+            if agente.estado == "Meta encontrada":
+                ejecutando = False
+                # Guardar el tiempo final si no se ha guardado ya
+                if tiempo_final is None and tiempo_inicio is not None:
+                    tiempo_final = time.time() - tiempo_inicio
+            else:
+                # Solo actualizar si no ha llegado a la meta
+                agente.actuar(laberinto)
+                pasos += 1
+                
+                if modo_dinamico:
+                    contador_dinamico -= 1
+                    if contador_dinamico <= 0:
+                        laberinto.cambiar_paredes_aleatorias(3)
+                        contador_dinamico = 10 
         
         # Dibujar
         ventana.fill(COLORES["fondo"])  # Limpiar toda la ventana
         dibujar_laberinto(ventana, laberinto, agente)
         botones = dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, 
-                               agente.estado, modo_dinamico, contador_dinamico, velocidad, mostrar_arbol)
+                               agente.estado, modo_dinamico, contador_dinamico, velocidad, mostrar_arbol, tiempo_final)
         if mostrar_arbol:
             dibujar_arbol_busqueda(ventana, agente)
         

@@ -6,7 +6,8 @@ class Agente:
         self.posicion = posicion_inicial
         self.camino_optimo = []
         self.visitados = []
-        self.algoritmo_actual = "A*"
+        self.algoritmo_actual = None  # Iniciar sin algoritmo
+        self.algoritmo_manual = False  # Nueva bandera
         self.estado = "Esperando"
         self.pasos_sin_avance = 0
         self.ciclos_atrapado = 0
@@ -29,7 +30,7 @@ class Agente:
         self.historial_posiciones = [posicion_inicial]
         self.nodo_final = None
         self.visualizador.limpiar()
-        self.tiempo_final = None
+        # No reiniciar self.algoritmo_actual ni self.algoritmo_manual
     
     def actuar(self, laberinto):
         """Actúa según el estado actual y el algoritmo seleccionado."""
@@ -50,20 +51,22 @@ class Agente:
             self.indice_camino >= len(self.ultimo_camino) or 
             self.pasos_sin_avance >= 3):
             
-            # Comprobar si el agente está atrapado
-            if agente_atrapado(laberinto, self.posicion):
-                self.ciclos_atrapado += 1
-                # Cambiar de algoritmo si sigue atrapado
-                if self.ciclos_atrapado >= 2:
-                    self.algoritmo_actual = sugerir_algoritmo(self.algoritmo_actual, "atrapado")
+            # El cambio automático de algoritmo solo ocurre si no fue seleccionado manualmente
+            if not self.algoritmo_manual:
+                # Comprobar si el agente está atrapado
+                if agente_atrapado(laberinto, self.posicion):
+                    self.ciclos_atrapado += 1
+                    # Cambiar de algoritmo si sigue atrapado
+                    if self.ciclos_atrapado >= 2:
+                        self.algoritmo_actual = sugerir_algoritmo(self.algoritmo_actual, "atrapado")
+                        self.ciclos_atrapado = 0
+                else:
                     self.ciclos_atrapado = 0
-            else:
-                self.ciclos_atrapado = 0
-                # Evaluar la situación del laberinto para elegir el mejor algoritmo
-                situacion = laberinto.calcular_situacion(self.posicion)
-                algoritmo_sugerido = sugerir_algoritmo(self.algoritmo_actual, situacion)
-                if algoritmo_sugerido != self.algoritmo_actual:
-                    self.algoritmo_actual = algoritmo_sugerido
+                    # Evaluar la situación del laberinto para elegir el mejor algoritmo
+                    situacion = laberinto.calcular_situacion(self.posicion)
+                    algoritmo_sugerido = sugerir_algoritmo(self.algoritmo_actual, situacion)
+                    if algoritmo_sugerido != self.algoritmo_actual:
+                        self.algoritmo_actual = algoritmo_sugerido
             
             # Calcular nuevo camino con el algoritmo actual
             camino, nodos_visitados, nodo_final = elegir_algoritmo(
@@ -86,8 +89,8 @@ class Agente:
                 if nodo not in self.visitados:
                     self.visitados.append(nodo)
             
-            # Si no se encontró camino, intentar con otro algoritmo
-            if camino is None:
+            # Si no se encontró camino, intentar con otro algoritmo, pero solo si no es una selección manual
+            if camino is None and not self.algoritmo_manual:
                 algoritmos = ["BFS", "DFS", "A*"]
                 algoritmos.remove(self.algoritmo_actual)
                 for algo in algoritmos:
@@ -143,6 +146,7 @@ class Agente:
         """Cambia el algoritmo de búsqueda manualmente."""
         if nuevo_algoritmo in ["BFS", "DFS", "A*"]:
             self.algoritmo_actual = nuevo_algoritmo
+            self.algoritmo_manual = True  # Marcar como selección manual
             # Forzar recálculo de la ruta
             self.ultimo_camino = None
             self.pasos_sin_avance = 0

@@ -13,7 +13,7 @@ class VisualizadorArbol:
         self.superficie = None
         self.ultimo_algoritmo = None
         self.ancho = 500
-        self.alto = 500
+        self.alto = 700  # Aumentar la altura para dar más espacio vertical
         self.niveles = {}  # Diccionario para almacenar los niveles de los nodos
 
     def limpiar(self):
@@ -186,7 +186,7 @@ class VisualizadorArbol:
         # Actualiza la visualización del árbol y la convierte en una superficie de pygame.
         if not self.grafo or not self.posiciones:
             # Crear un grafo vacío si no hay datos
-            self.figura = plt.figure(figsize=(4, 4), dpi=100)
+            self.figura = plt.figure(figsize=(5, 7), dpi=100)  # Mayor tamaño y relación de aspecto
             ax = self.figura.add_subplot(111)
             ax.text(0.5, 0.5, "No hay datos para visualizar",
                    horizontalalignment='center', verticalalignment='center')
@@ -194,9 +194,19 @@ class VisualizadorArbol:
             ax.set_yticks([])
             plt.tight_layout()
         else:
-            # Crear figura
-            self.figura = plt.figure(figsize=(4, 4), dpi=100)
+            # Crear figura con mayor tamaño vertical
+            self.figura = plt.figure(figsize=(5, 7), dpi=100)  # Ajuste para árboles altos
             ax = self.figura.add_subplot(111)
+            
+            # Ajustar margen para dar más espacio
+            plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+            
+            # Determinar el número de nodos para ajustar el tamaño
+            num_nodos = len(self.grafo.nodes())
+            # Ajustar tamaño de nodo según la cantidad de nodos
+            node_size = 600 if num_nodos < 20 else 350 if num_nodos < 50 else 400
+            # Ajustar tamaño de fuente según la cantidad de nodos
+            font_size = 8 if num_nodos < 20 else 6 if num_nodos < 50 else 5
 
             # Colores de nodos según el algoritmo
             if self.ultimo_algoritmo == "BFS":
@@ -206,8 +216,8 @@ class VisualizadorArbol:
             else:  # A*
                 node_color = 'lightcoral'
 
-            # Dibujar nodos
-            nx.draw_networkx_nodes(self.grafo, self.posiciones, node_size=300,
+            # Dibujar nodos con tamaño ajustado
+            nx.draw_networkx_nodes(self.grafo, self.posiciones, node_size=node_size,
                                   node_color=node_color, ax=ax)
 
             # Dibujar bordes normales
@@ -215,21 +225,28 @@ class VisualizadorArbol:
                             if 'optimal' not in d or not d['optimal']]
             if normal_edges:
                 nx.draw_networkx_edges(self.grafo, self.posiciones, edgelist=normal_edges,
-                                      width=1.0, alpha=0.7, ax=ax)
+                                      width=0.8, alpha=0.7, ax=ax)  # Bordes más delgados
 
             # Dibujar bordes del camino óptimo
             optimal_edges = [(u, v) for u, v, d in self.grafo.edges(data=True)
                             if 'optimal' in d and d['optimal']]
             if optimal_edges:
                 nx.draw_networkx_edges(self.grafo, self.posiciones, edgelist=optimal_edges,
-                                      width=2.5, edge_color='red', ax=ax)
+                                      width=2.0, edge_color='red', ax=ax)  # Camino óptimo más destacado
 
-            # Mostrar etiquetas de nodos
-            nx.draw_networkx_labels(self.grafo, self.posiciones, font_size=8, ax=ax)
+            # Mostrar etiquetas de nodos con tamaño ajustable
+            nx.draw_networkx_labels(self.grafo, self.posiciones, font_size=font_size, ax=ax)
 
-            # Título
-            plt.title(f"Árbol de búsqueda - {self.ultimo_algoritmo}")
-            plt.tight_layout()
+            # Título más compacto
+            plt.title(f"Árbol - {self.ultimo_algoritmo}", fontsize=10)
+            
+            # Remover bordes
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['bottom'].set_visible(False)
+            ax.spines['left'].set_visible(False)
+            
+            plt.tight_layout(pad=0.1)  # Reducir padding
 
         # Convertir figura a superficie de pygame
         canvas = FigureCanvasAgg(self.figura)
