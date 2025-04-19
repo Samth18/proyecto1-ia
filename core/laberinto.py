@@ -147,7 +147,7 @@ class Laberinto:
             if 0 <= nx < self.filas and 0 <= ny < self.columnas and self.grid[nx][ny] == 0:
                 espacios_libres += 1
         
-        # Verificar si estamos en un pasillo o espacio abierto
+        # Verificar si es   os en un pasillo o espacio abierto
         if espacios_libres <= 2:
             return "atrapado"
         elif espacios_libres >= 6:
