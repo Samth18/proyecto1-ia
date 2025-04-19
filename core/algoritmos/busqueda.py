@@ -1,5 +1,4 @@
 import heapq
-import math
 from collections import deque
 
 class Nodo:
@@ -12,16 +11,14 @@ class Nodo:
     def __lt__(self, otro):
         return self.costo < otro.costo
 
-def reconstruir_camino(nodo):
-    """Reconstruye el camino desde el nodo inicial hasta el nodo actual."""
+def reconstruir_camino(nodo):  # Reconstruye el camino desde el nodo inicial hasta el nodo actual.
     camino = []
     while nodo:
         camino.append(nodo.estado)
         nodo = nodo.padre
-    return list(reversed(camino))
+    return list(reversed(camino))  # Devuelve el camino en el orden correcto.
 
-def acciones_validas(estado, laberinto):
-    """Obtiene las acciones válidas desde un estado."""
+def acciones_validas(estado, laberinto):  # Obtiene las acciones válidas desde un estado en el laberinto.
     fila, col = estado
     acciones = []
     
@@ -44,8 +41,7 @@ def distancia_manhattan(estado1, estado2):
     """Calcula la distancia Manhattan entre dos estados."""
     return abs(estado1[0] - estado2[0]) + abs(estado1[1] - estado2[1])
 
-def bfs(laberinto, estado_inicial, meta):
-    """Búsqueda en amplitud (BFS)."""
+def bfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en amplitud (BFS) para encontrar un camino.
     nodo_inicial = Nodo(estado_inicial)
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
@@ -74,8 +70,7 @@ def bfs(laberinto, estado_inicial, meta):
     
     return None, todos_visitados, None  # No se encontró camino
 
-def dfs(laberinto, estado_inicial, meta):
-    """Búsqueda en profundidad (DFS)."""
+def dfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en profundidad (DFS) para encontrar un camino.
     nodo_inicial = Nodo(estado_inicial)
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
@@ -105,8 +100,7 @@ def dfs(laberinto, estado_inicial, meta):
     
     return None, todos_visitados, None  # No se encontró camino
 
-def a_estrella(laberinto, estado_inicial, meta):
-    """Algoritmo A* con heurística de distancia Manhattan."""
+def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para encontrar un camino óptimo.
     nodo_inicial = Nodo(estado_inicial)
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
