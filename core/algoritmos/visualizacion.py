@@ -115,7 +115,8 @@ class VisualizadorArbol:
         # Actualiza la visualización del árbol y la convierte en una superficie de pygame.
         if not self.grafo or not self.posiciones:
             # Crear un grafo vacío si no hay datos
-            self.figura = plt.figure(figsize=(5, 7), dpi=100)  # Mayor tamaño y relación de aspecto
+            # AJUSTAMOS EL ANCHO DE LA FIGURA (primer valor en figsize)
+            self.figura = plt.figure(figsize=(4.8, 7), dpi=100)
             ax = self.figura.add_subplot(111)
             ax.text(0.5, 0.5, "No hay datos para visualizar",
                    horizontalalignment='center', verticalalignment='center')
@@ -124,7 +125,8 @@ class VisualizadorArbol:
             plt.tight_layout()
         else:
             # Crear figura con mayor tamaño vertical
-            self.figura = plt.figure(figsize=(5, 7), dpi=100)
+            # AJUSTAMOS EL ANCHO DE LA FIGURA (primer valor en figsize)
+            self.figura = plt.figure(figsize=(4.8, 7), dpi=100)
             ax = self.figura.add_subplot(111)
             
             # Ajustar margen para dar más espacio

@@ -1,7 +1,12 @@
+# Importa pygame para la creación de la interfaz gráfica y manejo de eventos
 import pygame
+# Importa time para medir el tiempo de ejecución
 import time
+# Importa os para interactuar con el sistema operativo (rutas de archivos)
 import os
+# Importa la clase Laberinto desde el módulo core
 from core.laberinto import Laberinto
+# Importa la clase Agente desde el módulo core
 from core.agente import Agente
 
 # --- Constantes de Configuración ---
@@ -233,7 +238,7 @@ def dibujar_arbol_busqueda(ventana, agente):
     superficie_arbol = agente.obtener_superficie_arbol()
     if superficie_arbol:
         # Dibuja la superficie del árbol en la ventana
-        ventana.blit(superficie_arbol, (arbol_x + 10, 60)) # Con un pequeño margen
+        ventana.blit(superficie_arbol, (arbol_x, 60)) # Con un pequeño margen
 
 def obtener_fps_por_velocidad(velocidad):
     """Devuelve la tasa de fotogramas por segundo (FPS) según la velocidad seleccionada."""
@@ -258,17 +263,18 @@ def main():
     ALTO_VENTANA_TOTAL = pantalla_info.current_h
 
     # Calcula dimensiones relativas de los paneles y el laberinto
-    ANCHO_PANEL_CALC = int(ANCHO_VENTANA_TOTAL * 0.2)
-    ANCHO_ARBOL_CALC = int(ANCHO_VENTANA_TOTAL * 0.2)
+    ANCHO_PANEL_CALC = int(ANCHO_VENTANA_TOTAL * 0.21)
+    # REDUCIMOS LA PROPORCIÓN PARA EL ÁRBOL
+    ANCHO_ARBOL_CALC = int(ANCHO_VENTANA_TOTAL * 0.27)
     ANCHO_LABERINTO_CALC = ANCHO_VENTANA_TOTAL - ANCHO_PANEL_CALC - ANCHO_ARBOL_CALC
 
     # Define el tamaño del laberinto (filas y columnas)
     FILAS = 10
     COLUMNAS = 10
     # Calcula el tamaño de celda óptimo basado en la altura disponible
-    TAMANO_CELDA_CALC = (ALTO_VENTANA_TOTAL // FILAS) - MARGEN
-    if TAMANO_CELDA_CALC < 10: # Asegura un tamaño mínimo de celda
-        TAMANO_CELDA_CALC = 10
+    TAMANO_CELDA_CALC = int(((ALTO_VENTANA_TOTAL // FILAS) - MARGEN)/ 1.1)
+    if TAMANO_CELDA_CALC < 8: # Asegura un tamaño mínimo de celda (ajustado si es necesario)
+        TAMANO_CELDA_CALC = 8
 
     # Actualiza las constantes globales con los valores calculados
     global ANCHO_PANEL, ANCHO_LABERINTO, ANCHO_ARBOL, TAMANO_CELDA, ALTO_VENTANA

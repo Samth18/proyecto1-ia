@@ -80,10 +80,10 @@ class Agente:
             # Guarda el nodo final para la visualización del árbol
             self.nodo_final = nodo_final
 
-            # Actualiza la visualización del árbol de búsqueda con los nodos generados
-            self.visualizador.construir_arbol_desde_nodos(
-                self.algoritmo_actual, nodos_generados, camino
-            )
+            # Actualiza la visualización del árbol de búsqueda usando el nodo final
+            # Guarda el algoritmo usado para que el visualizador sepa cómo colorear
+            self.visualizador.ultimo_algoritmo = self.algoritmo_actual
+            self.visualizador.construir_arbol_desde_nodo(nodo_final)
 
             # Actualiza la lista de visitados con los nodos explorados por el algoritmo
             for nodo_estado in nodos_generados: # Asumiendo que nodos_generados contiene estados o nodos con .estado
@@ -112,9 +112,9 @@ class Agente:
                         self.nodo_final = nodo_final
                         print(f"Éxito con algoritmo de respaldo: {algo_respaldo}")
                         # Actualiza la visualización con los resultados del algoritmo de respaldo
-                        self.visualizador.construir_arbol_desde_nodos(
-                            self.algoritmo_actual, nodos_generados, camino
-                        )
+                        # Guarda el algoritmo usado para que el visualizador sepa cómo colorear
+                        self.visualizador.ultimo_algoritmo = self.algoritmo_actual
+                        self.visualizador.construir_arbol_desde_nodo(nodo_final)
                         # Actualiza visitados con los nodos del algoritmo de respaldo
                         for nodo_estado in nodos_generados:
                             estado_a_visitar = nodo_estado.estado if hasattr(nodo_estado, 'estado') else nodo_estado
