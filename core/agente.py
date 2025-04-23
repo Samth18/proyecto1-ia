@@ -69,7 +69,7 @@ class Agente:
                         self.algoritmo_actual = algoritmo_sugerido
             
             # Calcular nuevo camino con el algoritmo actual
-            camino, nodos_visitados, nodo_final = elegir_algoritmo(
+            camino, nodos_generados, nodo_final = elegir_algoritmo(
                 laberinto, self.posicion, laberinto.meta, self.algoritmo_actual
             )
             
@@ -77,21 +77,21 @@ class Agente:
             self.nodo_final = nodo_final
             
             # Actualizar el árbol de búsqueda para visualización
-            if nodo_final:
-                self.visualizador.construir_arbol_desde_nodo(nodo_final)
-            else:
-                self.visualizador.construir_arbol_desde_visitados(
-                    self.algoritmo_actual, nodos_visitados, camino
-                )
+            #if nodo_final:
+            #    self.visualizador.construir_arbol_desde_nodo(nodo_final)
+            #else:
+            self.visualizador.construir_arbol_desde_nodos(
+                self.algoritmo_actual, nodos_generados, camino
+            )
             
             # Actualizar visitados con los nodos explorados por el algoritmo
-            for nodo in nodos_visitados:
+            for nodo in nodos_generados:
                 if nodo not in self.visitados:
                     self.visitados.append(nodo)
             
             # Si no se encontró camino, intentar con otro algoritmo, pero solo si no es una selección manual
             if camino is None and not self.algoritmo_manual:
-                algoritmos = ["BFS", "DFS", "A*, IDS"]
+                algoritmos = ["BFS", "DFS", "A*", "IDS"]
                 algoritmos.remove(self.algoritmo_actual)
                 for algo in algoritmos:
                     camino, nodos_visitados, nodo_final = elegir_algoritmo(
@@ -101,13 +101,11 @@ class Agente:
                         self.algoritmo_actual = algo
                         self.nodo_final = nodo_final
                         # Actualizar visualización
-                        if nodo_final:
-                            self.visualizador.construir_arbol_desde_nodo(nodo_final)
-                        else:
-                            self.visualizador.construir_arbol_desde_visitados(
-                                self.algoritmo_actual, nodos_visitados, camino
-                            )
-                        break
+                        self.explorados = [nodo.estado for nodo in nodos_visitados]
+
+                        self.visualizador.construir_arbol_desde_nodos(
+                            self.algoritmo_actual, nodos_generados, camino
+                        )
             
             # Actualizar el camino y resetear el contador
             if camino:

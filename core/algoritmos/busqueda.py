@@ -43,6 +43,7 @@ def distancia_manhattan(estado1, estado2):
 
 def bfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en amplitud (BFS) para encontrar un camino.
     nodo_inicial = Nodo(estado_inicial)
+    nodos_generados = [nodo_inicial]
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
     
@@ -61,9 +62,10 @@ def bfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en amplitud (
         for accion, estado in acciones_validas(nodo.estado, laberinto):
             if estado not in explorados and estado not in estados_frontera:
                 hijo = Nodo(estado, nodo, accion, nodo.costo + 1)
+                nodos_generados.append(hijo)
                 
                 if estado == meta:
-                    return reconstruir_camino(hijo), todos_visitados, hijo
+                    return reconstruir_camino(hijo), nodos_generados, hijo
                 
                 frontera.append(hijo)
                 estados_frontera.add(estado)
@@ -72,6 +74,7 @@ def bfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en amplitud (
 
 def dfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en profundidad (DFS) para encontrar un camino.
     nodo_inicial = Nodo(estado_inicial)
+    nodos_generados = [nodo_inicial]
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
     
@@ -89,19 +92,21 @@ def dfs(laberinto, estado_inicial, meta):  # Realiza una búsqueda en profundida
             todos_visitados.append(nodo.estado)
             
             if nodo.estado == meta:
-                return reconstruir_camino(nodo), todos_visitados, nodo
+                return reconstruir_camino(nodo), nodos_generados, nodo
             
             # Añadir los sucesores
             for accion, estado in acciones_validas(nodo.estado, laberinto):
                 if estado not in explorados and estado not in estados_frontera:
                     hijo = Nodo(estado, nodo, accion, nodo.costo + 1)
                     frontera.append(hijo)
+                    nodos_generados.append(hijo)
                     estados_frontera.add(estado)
     
     return None, todos_visitados, None  # No se encontró camino
 
 def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para encontrar un camino óptimo.
     nodo_inicial = Nodo(estado_inicial)
+    nodos_generados = [nodo_inicial]
     if estado_inicial == meta:
         return reconstruir_camino(nodo_inicial), [estado_inicial], nodo_inicial
     
@@ -125,7 +130,7 @@ def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para
         estados_frontera.remove(nodo.estado)
         
         if nodo.estado == meta:
-            return reconstruir_camino(nodo), todos_visitados, nodo
+            return reconstruir_camino(nodo), nodos_generados, nodo
         
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
@@ -138,6 +143,7 @@ def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para
                     g_costo[estado] = nuevo_costo
                     f_valor = nuevo_costo + distancia_manhattan(estado, meta)
                     hijo = Nodo(estado, nodo, accion, nuevo_costo)
+                    nodos_generados.append(hijo)
                     
                     if estado not in estados_frontera:
                         heapq.heappush(frontera, (f_valor, contador, hijo))
@@ -146,39 +152,49 @@ def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para
                     # Si ya está en la frontera pero con un costo mayor, actualizarlo
                     # (esto requeriría una implementación más compleja con diccionarios adicionales)
     
-    return None, todos_visitados, None  # No se encontró camino
-def ids(laberinto, estado_inicial, meta, limite_max=50):
-    """Búsqueda por profundización iterativa (IDS)."""
-    todos_visitados = []
+    return None, nodos_generados, None  # No se encontró camino
 
-    def dls(estado, meta, limite, padre, visitados):
-        if estado == meta:
-            return True
+def ids(laberinto, estado_inicial, meta, limite_max=7):
+    """Búsqueda por profundización iterativa (IDS) usando nodos completos."""
+    class NodoIDS:
+        def __init__(self, estado, padre=None, accion=None, profundidad=0):
+            self.estado = estado
+            self.padre = padre
+            self.accion = accion
+            self.profundidad = profundidad
+
+    def reconstruir_camino_desde_nodo(nodo):
+        camino = []
+        while nodo:
+            camino.append(nodo.estado)
+            nodo = nodo.padre
+        return list(reversed(camino))
+
+    nodos_generados = []
+
+    def dls(nodo, meta, limite):
+        if nodo.estado == meta:
+            return nodo
         if limite == 0:
-            return False
-        
-        for _, vecino in acciones_validas(estado, laberinto):
-            if vecino not in padre:
-                padre[vecino] = estado
-                visitados.append(vecino)
-                if dls(vecino, meta, limite - 1, padre, visitados):
-                    return True
-        return False
+            return None
+        for accion, vecino in acciones_validas(nodo.estado, laberinto):
+            hijo = NodoIDS(vecino, nodo, accion, nodo.profundidad + 1)
+            nodos_generados.append(hijo)
+            resultado = dls(hijo, meta, limite - 1)
+            if resultado:
+                return resultado
+        return None
 
     for limite in range(1, limite_max + 1):
-        padre = {estado_inicial: None}
-        visitados = []
-        if dls(estado_inicial, meta, limite, padre, visitados):
-            camino = []
-            actual = meta
-            while actual is not None:
-                camino.insert(0, actual)
-                actual = padre[actual]
-            todos_visitados.extend(visitados)
-            return camino, todos_visitados, None
-        todos_visitados.extend(visitados)  # Para visualización
+        raiz = NodoIDS(estado_inicial)
+        nodos_generados = [raiz]
+        resultado = dls(raiz, meta, limite)
+        if resultado:
+            camino = reconstruir_camino_desde_nodo(resultado)
+            return camino, nodos_generados, resultado
 
-    return None, todos_visitados, None
+    return None, nodos_generados, None
+
 
 
 def elegir_algoritmo(laberinto, estado_actual, meta, algoritmo="A*"):
