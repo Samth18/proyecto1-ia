@@ -64,6 +64,32 @@ class VisualizadorArbol:
                     self.grafo.add_node(estado_str)
 
         # Calcular las posiciones de los nodos
+        self.posiciones = graphviz_layout(self.grafo, prog='dot')
+    def construir_arbol_desde_nodos(self, algoritmo, nodos, camino=None):
+        self.limpiar()
+        self.ultimo_algoritmo = algoritmo
+
+        if not nodos:
+            return
+
+        for nodo in nodos:
+            hijo_str = f"{nodo.estado[0]},{nodo.estado[1]}"
+            self.grafo.add_node(hijo_str)
+
+            if nodo.padre:
+                padre_str = f"{nodo.padre.estado[0]},{nodo.padre.estado[1]}"
+                self.grafo.add_node(padre_str)
+                self.grafo.add_edge(padre_str, hijo_str)
+
+        self.niveles = self.calcular_niveles_desde_inicio(nodos[0].estado)
+
+        if camino:
+            for i in range(len(camino) - 1):
+                estado1 = f"{camino[i][0]},{camino[i][1]}"
+                estado2 = f"{camino[i+1][0]},{camino[i+1][1]}"
+                if self.grafo.has_edge(estado1, estado2):
+                    self.grafo[estado1][estado2]['optimal'] = True
+
         self.posiciones = graphviz_layout(self.grafo, prog='dot') 
 
     def construir_arbol_desde_visitados(self, algoritmo, visitados, camino=None):

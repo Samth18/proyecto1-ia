@@ -112,7 +112,7 @@ def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo
     texto_tiempo = fuente.render(f"Tiempo: {tiempo_actual:.1f}s", True, (0, 0, 0))
     texto_estado = fuente.render(f"Estado: {agente.estado}", True, (0, 0, 0))
     texto_dinamico = fuente.render(f"Modo Dinámico: {'Activado' if modo_dinamico else 'Desactivado'}", True, (0, 0, 0))
-    texto_contador = fuente.render(f"Cambios en: {contador_dinamico}", True, (0, 0, 0) if contador_dinamico > 3 else (255, 0, 0))
+    texto_contador = fuente.render(f"Cambios en: {contador_dinamico}", True, (0, 0, 0) if contador_dinamico > 1 else (255, 0, 0))
     
     panel.blit(texto_algoritmo, (20, 80))
     panel.blit(texto_pasos, (20, 120))
@@ -293,7 +293,7 @@ def main():
     pygame.display.set_caption("Laberinto Dinámico IA")
     
     # Crear laberinto y agente
-    laberinto = Laberinto(17, 17, 0.8) #Hay que cambiar la densidad de las paredes dependiendo del tamaño del laberinto
+    laberinto = Laberinto(10, 10, 1) #Hay que cambiar la densidad de las paredes dependiendo del tamaño del laberinto
     agente = Agente(laberinto.inicio)  
     
     # Variables de control
@@ -303,7 +303,7 @@ def main():
     tiempo_inicio = None
     tiempo_final = None  # Añadir una variable para almacenar el tiempo final cuando se encuentra la meta
     modo_dinamico = False
-    contador_dinamico = 10 
+    contador_dinamico = 3 
     velocidad = "Normal"
     mostrar_arbol = True    
     
@@ -375,7 +375,7 @@ def main():
                             pasos = 0
                             tiempo_inicio = None
                             tiempo_final = None  # Reiniciar el tiempo final también
-                            contador_dinamico = 10  
+                            contador_dinamico = 3  
                         elif nombre == "arbol":
                             mostrar_arbol = not mostrar_arbol
                             break
@@ -403,7 +403,7 @@ def main():
                     contador_dinamico -= 1
                     if contador_dinamico <= 0:
                         laberinto.cambiar_paredes_aleatorias(3)
-                        contador_dinamico = 10 
+                        contador_dinamico = 3 
         
         # Dibujar
         ventana.fill(COLORES["fondo"])  # Limpiar toda la ventana
