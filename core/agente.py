@@ -1,5 +1,5 @@
 from core.algoritmos import elegir_algoritmo, agente_atrapado, sugerir_algoritmo
-from core.algoritmos import VisualizadorArbol
+from core.algoritmos.visualizacion import VisualizadorArbol
 
 class Agente:
     def __init__(self, posicion_inicial=(1, 1)):
@@ -91,7 +91,7 @@ class Agente:
             
             # Si no se encontró camino, intentar con otro algoritmo, pero solo si no es una selección manual
             if camino is None and not self.algoritmo_manual:
-                algoritmos = ["BFS", "DFS", "A*"]
+                algoritmos = ["BFS", "DFS", "A*, IDS"]
                 algoritmos.remove(self.algoritmo_actual)
                 for algo in algoritmos:
                     camino, nodos_visitados, nodo_final = elegir_algoritmo(
@@ -144,7 +144,7 @@ class Agente:
     
     def cambiar_algoritmo(self, nuevo_algoritmo):
         """Cambia el algoritmo de búsqueda manualmente."""
-        if nuevo_algoritmo in ["BFS", "DFS", "A*"]:
+        if nuevo_algoritmo in ["BFS", "DFS", "A*, IDS"]:
             self.algoritmo_actual = nuevo_algoritmo
             self.algoritmo_manual = True  # Marcar como selección manual
             # Forzar recálculo de la ruta
