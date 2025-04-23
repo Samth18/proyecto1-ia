@@ -165,7 +165,7 @@ def dibujar_panel(ventana, agente, laberinto, pasos, tiempo_inicio, estado, modo
     panel.blit(texto_seleccion, (20, y_offset))
     y_offset += 40
     
-    algoritmos = ["BFS", "DFS", "A*"]
+    algoritmos = ["BFS", "DFS", "A*", "IDS"]
     for algo in algoritmos:
         boton_algo = pygame.Rect(50, y_offset, 300, 40)
         if algo == agente.algoritmo_actual:
@@ -331,7 +331,7 @@ def main():
                             botones_pulsados.append(nombre)
                     
                     # Dar prioridad a los botones de algoritmo en orden inverso (A* primero)
-                    algoritmos_rev = ["A*", "DFS", "BFS"]
+                    algoritmos_rev = ["A*", "DFS", "BFS", "IDS"]
                     for algoritmo in algoritmos_rev:
                         algo_nombre = f"algo_{algoritmo}"
                         if algo_nombre in botones_pulsados:

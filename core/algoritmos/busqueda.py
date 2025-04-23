@@ -147,6 +147,39 @@ def a_estrella(laberinto, estado_inicial, meta):  # Realiza el algoritmo A* para
                     # (esto requeriría una implementación más compleja con diccionarios adicionales)
     
     return None, todos_visitados, None  # No se encontró camino
+def ids(laberinto, estado_inicial, meta, limite_max=50):
+    """Búsqueda por profundización iterativa (IDS)."""
+    todos_visitados = []
+
+    def dls(estado, meta, limite, padre, visitados):
+        if estado == meta:
+            return True
+        if limite == 0:
+            return False
+        
+        for _, vecino in acciones_validas(estado, laberinto):
+            if vecino not in padre:
+                padre[vecino] = estado
+                visitados.append(vecino)
+                if dls(vecino, meta, limite - 1, padre, visitados):
+                    return True
+        return False
+
+    for limite in range(1, limite_max + 1):
+        padre = {estado_inicial: None}
+        visitados = []
+        if dls(estado_inicial, meta, limite, padre, visitados):
+            camino = []
+            actual = meta
+            while actual is not None:
+                camino.insert(0, actual)
+                actual = padre[actual]
+            todos_visitados.extend(visitados)
+            return camino, todos_visitados, None
+        todos_visitados.extend(visitados)  # Para visualización
+
+    return None, todos_visitados, None
+
 
 def elegir_algoritmo(laberinto, estado_actual, meta, algoritmo="A*"):
     """Selecciona y ejecuta el algoritmo de búsqueda apropiado."""
@@ -156,6 +189,8 @@ def elegir_algoritmo(laberinto, estado_actual, meta, algoritmo="A*"):
         return dfs(laberinto, estado_actual, meta)
     elif algoritmo == "A*":
         return a_estrella(laberinto, estado_actual, meta)
+    elif algoritmo == "IDS":
+        return ids(laberinto, estado_actual, meta)
     else:
         # Por defecto, usar A* (mejor opción para la mayoría de casos)
         return a_estrella(laberinto, estado_actual, meta)
@@ -168,16 +203,11 @@ def agente_atrapado(laberinto, estado, umbral=1):
 
 # Función para sugerir cambio de algoritmo
 def sugerir_algoritmo(algoritmo_actual, situacion):
-    """Sugiere un algoritmo según la situación del laberinto."""
     if situacion == "atrapado":
-        # Si está atrapado, DFS puede ser mejor para explorar salidas
-        return "DFS" if algoritmo_actual != "DFS" else "BFS"
+        return "DFS" if algoritmo_actual != "DFS" else "IDS"
     elif situacion == "abierto":
-        # En espacios abiertos, A* es más eficiente
         return "A*"
     elif situacion == "laberinto_complejo":
-        # En laberintos complejos, BFS garantiza el camino más corto
-        return "BFS"
+        return "IDS" if algoritmo_actual != "IDS" else "BFS"
     else:
-        # Por defecto, A* es una buena combinación de eficiencia y optimalidad
-        return "A*" 
+        return "A*"
