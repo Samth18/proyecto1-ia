@@ -142,7 +142,7 @@ class Agente:
     
     def cambiar_algoritmo(self, nuevo_algoritmo):
         """Cambia el algoritmo de búsqueda manualmente."""
-        if nuevo_algoritmo in ["BFS", "DFS", "A*, IDS"]:
+        if nuevo_algoritmo in ["BFS", "DFS", "A*", "IDS"]:
             self.algoritmo_actual = nuevo_algoritmo
             self.algoritmo_manual = True  # Marcar como selección manual
             # Forzar recálculo de la ruta

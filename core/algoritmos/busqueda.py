@@ -22,9 +22,10 @@ def acciones_validas(estado, laberinto):  # Obtiene las acciones válidas desde 
     fila, col = estado
     acciones = []
     
-    # Posibles movimientos: arriba, derecha, abajo, izquierda
-    movimientos = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    nombres = ["arriba", "derecha", "abajo", "izquierda"]
+    # Posibles movimientos: izquierda, abajo, derecha, arriba (orden invertido para DFS LIFO)
+    movimientos = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    nombres = ["izquierda", "abajo", "derecha", "arriba"]
+
     
     for i, (df, dc) in enumerate(movimientos):
         nueva_fila, nueva_col = fila + df, col + dc

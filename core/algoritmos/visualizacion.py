@@ -58,7 +58,7 @@ class VisualizadorArbol:
                 if nodo.padre:
                     padre_str = f"{nodo.padre.estado[0]},{nodo.padre.estado[1]}"
                     self.grafo.add_edge(padre_str, estado_str)
-                    pila.append(nodo.padre)
+                    pila.insert(0, nodo.padre)
                 else:
                     # Es el nodo inicial
                     self.grafo.add_node(estado_str)
